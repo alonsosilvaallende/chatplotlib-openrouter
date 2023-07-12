@@ -5,9 +5,10 @@ from components.Sidebar import sidebar
 import json
 from shared import constants
 
+st.sidebar.title("Chatplotlib")
+
 api_key, selected_model = sidebar(constants.OPENROUTER_DEFAULT_CHAT_MODEL)
 
-st.sidebar.title("Chatplotlib")
 
 # Initialize chat history
 if "messages" not in st.session_state:

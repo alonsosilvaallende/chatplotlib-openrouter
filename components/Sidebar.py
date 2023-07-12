@@ -15,7 +15,6 @@ def get_available_models():
         st.error(f"Error getting models from API: {e}")
         return []
 
-
 # Handle the model selection process
 def handle_model_selection(available_models, selected_model, default_model):
     # Determine the index of the selected model
