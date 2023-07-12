@@ -32,7 +32,7 @@ if prompt := st.chat_input("Your message"):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        for response in openai.ChatCompletion.create(
+        response = openai.ChatCompletion.create(
             model=selected_model,
             headers={"HTTP-Referer": constants.OPENROUTER_REFERRER},
             messages=[
@@ -40,9 +40,7 @@ if prompt := st.chat_input("Your message"):
                 for m in st.session_state.messages
             ],
             temperature=0,
-            stream=True,
-        ):
-            full_response += response.choices[0].delta.get("content", "")
-            message_placeholder.markdown(full_response + "▌")
+        )
+        full_response += response.choices[0].message.content
         message_placeholder.markdown(full_response)
     st.session_state.messages.append({"role": "assistant", "content": full_response})
