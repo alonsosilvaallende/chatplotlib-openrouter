@@ -76,10 +76,6 @@ def sidebar(default_model):
                 del st.session_state["api_key"]
                 st.experimental_rerun()
         st.markdown(
-            "[View the source code](https://github.com/alexanderatallah/openrouter-streamlit)"
+            "[View the source code](https://github.com/alonsosilvaallende/chatplotlib-openrouter)"
         )
-        # st.markdown(
-        #     "[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/alexanderatallah/openrouter-streamlit?quickstart=1)"
-        # )
-
     return api_key, selected_model

@@ -7,41 +7,42 @@ from shared import constants
 
 api_key, selected_model = sidebar(constants.OPENROUTER_DEFAULT_CHAT_MODEL)
 
-st.title("💬 Streamlit GPT")
+st.sidebar.title("Chatplotlib")
+
+# Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [
-        {"role": "assistant", "content": "How can I help you?"}
-    ]
+    st.session_state.messages = []
 
-with st.form("chat_input", clear_on_submit=True):
-    a, b = st.columns([4, 1])
-    user_input = a.text_input(
-        label="Your message:",
-        placeholder="What would you like to say?",
-        label_visibility="collapsed",
-    )
-    b.form_submit_button("Send", use_container_width=True)
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-for i, msg in enumerate(st.session_state.messages):
-    message(msg["content"], is_user=msg["role"] == "user", key=i)
+# Accept user input
+if prompt := st.chat_input("Your message"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-if user_input and not api_key:
-    st.info("Please click Connect OpenRouter to continue.")
-
-if user_input and api_key:
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    message(user_input, is_user=True)
+    # Display assistant response in chat message container
     openai.api_key = api_key
     openai.api_base = constants.OPENROUTER_API_BASE
-    response = openai.ChatCompletion.create(
-        model=selected_model,
-        messages=st.session_state.messages,
-        headers={"HTTP-Referer": constants.OPENROUTER_REFERRER},
-    )
-    # response is sometimes type str
-    # TODO replace this hack with a real fix
-    if type(response) == str:
-        response = json.loads(response)
-    msg = response["choices"][0]["message"]
-    st.session_state.messages.append(msg)
-    message(msg["content"])
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        for response in openai.ChatCompletion.create(
+            model=selected_model,
+            headers={"HTTP-Referer": constants.OPENROUTER_REFERRER},
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            temperature=0,
+            stream=True,
+        ):
+            full_response += response.choices[0].delta.get("content", "")
+            message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
